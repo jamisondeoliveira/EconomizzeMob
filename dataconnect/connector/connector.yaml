@@ -1,0 +1,5 @@
+connectorId: "economizze"
+generate:
+  kotlinSdk:
+    outputDir: "../../app/src/main/java"
+    package: "com.example.economizzemob.dataconnect"

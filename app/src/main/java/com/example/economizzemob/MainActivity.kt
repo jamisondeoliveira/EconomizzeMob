@@ -24,19 +24,20 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.navigation.NavigationView
-import com.google.gson.Gson
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
+import java.util.UUID
 
-data class Movimentacao(val descricao: String, val valor: Double, val data: String, val ehSaida: Boolean): java.io.Serializable
+data class Movimentacao(val descricao: String, val valor: Double, val data: String, val ehSaida: Boolean, val id: String = UUID.randomUUID().toString(), val sincronizado: Boolean = false): java.io.Serializable
 
 class MainActivity : AppCompatActivity() {
 
     private var saldo = 0.0
-    private val entradas = mutableListOf<Movimentacao>()
-    private val saidas = mutableListOf<Movimentacao>()
+    private var movimentacoes = mutableListOf<Movimentacao>()
     private lateinit var valorTotal: TextView
     private lateinit var listaEntrada: LinearLayout
     private lateinit var listaSaida: LinearLayout
@@ -83,26 +84,8 @@ class MainActivity : AppCompatActivity() {
         pedirPermissaoNotificacao()
         carregarHistorico()
 
-        if (savedInstanceState != null) {
-            saldo = savedInstanceState.getDouble("saldo", 0.0)
-            @Suppress("DEPRECATION", "UNCHECKED_CAST")
-            val entradasSalvas = savedInstanceState.getSerializable("entradas") as? ArrayList<Movimentacao>
-            @Suppress("DEPRECATION", "UNCHECKED_CAST")
-            val saidasSalvas = savedInstanceState.getSerializable("saidas") as? ArrayList<Movimentacao>
-            entradasSalvas?.let { entradas.addAll(it); it.forEach { m -> adicionarValor(listaEntrada, m.descricao, m.valor, m.data, false) } }
-            saidasSalvas?.let { saidas.addAll(it); it.forEach { m -> adicionarValor(listaSaida, m.descricao, m.valor, m.data, true) } }
-            atualizarSaldo()
-        }
-
-        findViewById<Button>(R.id.btnEntrada).setOnClickListener { abrirDialogoMovimentacao("Adicionar Entrada", "Digite o valor", listaEntrada, false) }
-        findViewById<Button>(R.id.btnSaida).setOnClickListener { abrirDialogoMovimentacao("Adicionar Saída", "Digite a despesa", listaSaida, true) }
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putDouble("saldo", saldo)
-        outState.putSerializable("entradas", ArrayList(entradas))
-        outState.putSerializable("saidas", ArrayList(saidas))
+        findViewById<Button>(R.id.btnEntrada).setOnClickListener { abrirDialogoMovimentacao("Adicionar Entrada", "Digite o valor", false) }
+        findViewById<Button>(R.id.btnSaida).setOnClickListener { abrirDialogoMovimentacao("Adicionar Saída", "Digite a despesa", true) }
     }
 
     private fun criarCanalNotificacao() {
@@ -152,7 +135,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun abrirDialogoMovimentacao(titulo: String, textoValor: String, lista: LinearLayout, ehSaida: Boolean) {
+    private fun abrirDialogoMovimentacao(titulo: String, textoValor: String, ehSaida: Boolean) {
         val layout = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(30, 20, 30, 20) }
         val campoDescricao = EditText(this).apply { hint = if (ehSaida) "Ex: Mercado" else "Ex: Salário"; inputType = InputType.TYPE_CLASS_TEXT }
         val campoValor = EditText(this).apply { hint = textoValor; inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL }
@@ -169,10 +152,9 @@ class MainActivity : AppCompatActivity() {
                 val data = campoData.text.toString().trim()
                 if (descricao.isNotEmpty() && valor != null && valor > 0 && data.isNotEmpty()) {
                     val mov = Movimentacao(descricao, valor, data, ehSaida)
-                    if (ehSaida) { saldo -= valor; saidas.add(mov) } else { saldo += valor; entradas.add(mov) }
-                    atualizarSaldo()
-                    adicionarValor(lista, descricao, valor, data, ehSaida)
-                    salvarHistorico()
+                    movimentacoes.add(mov)
+                    renderizar()
+                    salvarHistorico(mov)
                 }
             }.create().show()
     }
@@ -189,46 +171,64 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // AGORA FORA, CORRETO!
-    private fun salvarHistorico() {
-        val todas = mutableListOf<Movimentacao>()
-        todas.addAll(entradas)
-        todas.addAll(saidas)
-        val json = Gson().toJson(todas)
-        getSharedPreferences("economizze", MODE_PRIVATE).edit().putString("movs", json).apply()
-        getSharedPreferences("economizze", MODE_PRIVATE).edit().putString("saldo", saldo.toString()).apply()
+    // Salva no aparelho na hora e envia para o Firebase em segundo plano
+    private fun salvarHistorico(alterada: Movimentacao) {
+        MovimentacaoRepository.salvarLocal(this, movimentacoes)
+        lifecycleScope.launch {
+            if (MovimentacaoRepository.enviar(alterada)) {
+                val i = movimentacoes.indexOfFirst { it.id == alterada.id }
+                if (i >= 0 && movimentacoes[i] == alterada) {
+                    movimentacoes[i] = alterada.copy(sincronizado = true)
+                    MovimentacaoRepository.salvarLocal(this@MainActivity, movimentacoes)
+                }
+            }
+        }
     }
 
+    private fun excluirMovimentacao(mov: Movimentacao) {
+        movimentacoes.removeAll { it.id == mov.id }
+        renderizar()
+        MovimentacaoRepository.salvarLocal(this, movimentacoes)
+        lifecycleScope.launch { MovimentacaoRepository.excluir(this@MainActivity, mov.id) }
+    }
+
+    // Mostra o que está no aparelho e depois atualiza com o Firebase
     private fun carregarHistorico() {
-        // se quiser carregar ao abrir, descomenta
-        // val prefs = getSharedPreferences("economizze", MODE_PRIVATE)
-        // saldo = prefs.getString("saldo", "0.0")?.toDoubleOrNull() ?: 0.0
-        // atualizarSaldo()
+        movimentacoes = MovimentacaoRepository.carregarLocal(this)
+        renderizar()
+        lifecycleScope.launch {
+            MovimentacaoRepository.sincronizar(this@MainActivity)?.let {
+                movimentacoes = it
+                renderizar()
+            }
+        }
     }
 
-    private fun adicionarValor(lista: LinearLayout, descricao: String, valor: Double, data: String, ehSaida: Boolean) {
-        lista.findViewWithTag<TextView>("vazio_entrada")?.let { lista.removeView(it) }
-        lista.findViewWithTag<TextView>("vazio_saida")?.let { lista.removeView(it) }
+    private fun renderizar() {
+        listaEntrada.removeAllViews()
+        listaSaida.removeAllViews()
+        movimentacoes.forEach { adicionarValor(if (it.ehSaida) listaSaida else listaEntrada, it) }
+        if (listaEntrada.childCount == 0) adicionarMensagemVazio(listaEntrada, false)
+        if (listaSaida.childCount == 0) adicionarMensagemVazio(listaSaida, true)
+        saldo = movimentacoes.sumOf { if (it.ehSaida) -it.valor else it.valor }
+        atualizarSaldo()
+    }
+
+    private fun adicionarValor(lista: LinearLayout, mov: Movimentacao) {
+        val (descricao, valor, data, ehSaida) = mov
         val item = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER_VERTICAL; setPadding(20, 15, 20, 15) }
         val fundo = android.graphics.drawable.GradientDrawable().apply { setColor(android.graphics.Color.WHITE); cornerRadius = 20f }
         item.background = fundo
         item.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { bottomMargin = 12 }
         val textoDescricao = TextView(this).apply { text = descricao; textSize = 17f; setTextColor(android.graphics.Color.parseColor("#172033")); setTypeface(null, android.graphics.Typeface.BOLD) }
         val tipo = TextView(this).apply { text = if (ehSaida) "Saída" else "Entrada"; textSize = 13f; setTextColor(android.graphics.Color.parseColor("#737B8C")) }
-        var valorAtual = valor
         val valorTexto = TextView(this).apply { textSize = 20f; setTextColor(android.graphics.Color.parseColor("#0C214C")); setTypeface(null, android.graphics.Typeface.BOLD) }
-        atualizarTextoValor(valorTexto, valorAtual, ehSaida)
+        atualizarTextoValor(valorTexto, valor, ehSaida)
         val textoData = TextView(this).apply { text = "📅 $data"; textSize = 13f; setTextColor(android.graphics.Color.parseColor("#737B8C")) }
         val botaoEditar = Button(this).apply { text = "EDITAR"; textSize = 11f; layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, 90).apply { topMargin = 10 }; setBackgroundColor(android.graphics.Color.parseColor("#0C214C")); setTextColor(android.graphics.Color.WHITE) }
         val botaoExcluir = Button(this).apply { text = "EXCLUIR"; textSize = 11f; layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, 90).apply { topMargin = 5 }; setBackgroundColor(android.graphics.Color.parseColor("#172033")); setTextColor(android.graphics.Color.WHITE) }
-        botaoEditar.setOnClickListener { val valorAnterior = valorAtual; editarMovimentacao(textoDescricao, valorTexto, textoData, valorAnterior, ehSaida) { novoValor -> valorAtual = novoValor } }
-        botaoExcluir.setOnClickListener {
-            if (ehSaida) { saldo += valorAtual; saidas.removeIf { it.valor == valorAtual } } else { saldo -= valorAtual; entradas.removeIf { it.valor == valorAtual } }
-            atualizarSaldo()
-            salvarHistorico()
-            lista.removeView(item)
-            if (lista.childCount == 0) adicionarMensagemVazio(lista, ehSaida)
-        }
+        botaoEditar.setOnClickListener { editarMovimentacao(mov) }
+        botaoExcluir.setOnClickListener { excluirMovimentacao(mov) }
         item.addView(textoDescricao); item.addView(tipo); item.addView(valorTexto); item.addView(textoData); item.addView(botaoEditar); item.addView(botaoExcluir)
         lista.addView(item)
     }
@@ -238,19 +238,21 @@ class MainActivity : AppCompatActivity() {
         lista.addView(vazio)
     }
 
-    private fun editarMovimentacao(textoDescricao: TextView, valorTexto: TextView, textoData: TextView, valorAntigo: Double, ehSaida: Boolean, atualizarValor: (Double) -> Unit) {
+    private fun editarMovimentacao(mov: Movimentacao) {
         val layout = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(30,20,30,20) }
-        val campoDescricao = EditText(this).apply { setText(textoDescricao.text); inputType = InputType.TYPE_CLASS_TEXT }
-        val campoValor = EditText(this).apply { setText(String.format(Locale.US, "%.2f", valorAntigo)); inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL }
-        val campoData = EditText(this).apply { setText(textoData.text.toString().replace("📅 ", "")); isFocusable = false; isClickable = true }
+        val campoDescricao = EditText(this).apply { setText(mov.descricao); inputType = InputType.TYPE_CLASS_TEXT }
+        val campoValor = EditText(this).apply { setText(String.format(Locale.US, "%.2f", mov.valor)); inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL }
+        val campoData = EditText(this).apply { setText(mov.data); isFocusable = false; isClickable = true }
         campoData.setOnClickListener { val calendario = Calendar.getInstance(); DatePickerDialog(this, { _, ano, mes, dia -> val novaData = Calendar.getInstance().apply { set(ano, mes, dia) }; campoData.setText(SimpleDateFormat("dd/MM/yyyy", localeBR).format(novaData.time)) }, calendario.get(Calendar.YEAR), calendario.get(Calendar.MONTH), calendario.get(Calendar.DAY_OF_MONTH)).show() }
         layout.addView(campoDescricao); layout.addView(campoValor); layout.addView(campoData)
         AlertDialog.Builder(this).setTitle("Editar Movimentação").setView(layout).setNegativeButton("CANCELAR", null).setPositiveButton("SALVAR") { _, _ ->
             val novaDescricao = campoDescricao.text.toString().trim(); val novoValor = campoValor.text.toString().toDoubleOrNull(); val novaData = campoData.text.toString().trim()
             if (novaDescricao.isNotEmpty() && novoValor != null && novoValor > 0 && novaData.isNotEmpty()) {
-                if (ehSaida) saldo += valorAntigo else saldo -= valorAntigo
-                if (ehSaida) saldo -= novoValor else saldo += novoValor
-                textoDescricao.text = novaDescricao; atualizarTextoValor(valorTexto, novoValor, ehSaida); textoData.text = "📅 $novaData"; atualizarValor(novoValor); atualizarSaldo(); salvarHistorico()
+                val editada = mov.copy(descricao = novaDescricao, valor = novoValor, data = novaData, sincronizado = false)
+                val i = movimentacoes.indexOfFirst { it.id == mov.id }
+                if (i >= 0) movimentacoes[i] = editada
+                renderizar()
+                salvarHistorico(editada)
             }
         }.create().show()
     }

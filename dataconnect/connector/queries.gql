@@ -1,0 +1,9 @@
+query ListarMovimentacoes @auth(level: PUBLIC, insecureReason: "Modo teste: app ainda sem login") {
+  movimentacoes {
+    id
+    descricao
+    valor
+    data
+    ehSaida
+  }
+}

@@ -1,0 +1,11 @@
+specVersion: "v1"
+serviceId: "economizze-dd05d-service"
+location: "southamerica-east1"
+schema:
+  source: "./schema"
+  datasource:
+    postgresql:
+      database: "economizze-dd05d-database"
+      cloudSql:
+        instanceId: "economizze-dd05d-instance"
+connectorDirs: ["./connector"]

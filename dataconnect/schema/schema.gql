@@ -1,0 +1,8 @@
+# Entradas e saídas do app (equivalente ao data class Movimentacao)
+type Movimentacao @table(name: "movimentacoes", singular: "movimentacao", plural: "movimentacoes") {
+  id: UUID! @default(expr: "uuidV4()")
+  descricao: String!
+  valor: Float!
+  data: String!
+  ehSaida: Boolean!
+}

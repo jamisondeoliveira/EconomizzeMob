@@ -1,0 +1,10 @@
+# Cria ou atualiza (o id é gerado no app, então serve para inserir, editar e reenviar pendentes)
+mutation SalvarMovimentacao($id: UUID!, $descricao: String!, $valor: Float!, $data: String!, $ehSaida: Boolean!)
+  @auth(level: PUBLIC, insecureReason: "Modo teste: app ainda sem login") {
+  movimentacao_upsert(data: { id: $id, descricao: $descricao, valor: $valor, data: $data, ehSaida: $ehSaida })
+}
+
+mutation ExcluirMovimentacao($id: UUID!)
+  @auth(level: PUBLIC, insecureReason: "Modo teste: app ainda sem login") {
+  movimentacao_delete(id: $id)
+}
