@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/drawerLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:background="#F2F4F7">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="#0C214C"
+            app:title="Economizze"
+            app:titleTextColor="#FFFFFF"/>
+
+        <ScrollView android:layout_width="match_parent" android:layout_height="match_parent">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="16dp">
+                <TextView android:id="@+id/valorTotal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="R$ 0,00" android:textSize="28sp" android:textStyle="bold" android:textColor="#0C214C"/>
+                <TextView android:id="@+id/textoAlertaSaldo" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Saldo negativo!" android:textColor="#FF3B30" android:visibility="gone"/>
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="16dp">
+                    <Button android:id="@+id/btnEntrada" android:layout_width="0dp" android:layout_weight="1" android:layout_height="50dp" android:text="Entrada"/>
+                    <Button android:id="@+id/btnSaida" android:layout_width="0dp" android:layout_weight="1" android:layout_height="50dp" android:layout_marginStart="8dp" android:text="Saída"/>
+                </LinearLayout>
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Entradas" android:textStyle="bold" android:layout_marginTop="16dp"/>
+                <LinearLayout android:id="@+id/listaEntrada" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical"/>
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Saídas" android:textStyle="bold" android:layout_marginTop="16dp"/>
+                <LinearLayout android:id="@+id/listaSaida" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical"/>
+            </LinearLayout>
+        </ScrollView>
+    </LinearLayout>
+
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/navView"
+        android:layout_width="280dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        app:headerLayout="@layout/header_drawer"
+        app:menu="@menu/menu_drawer"/>
+</androidx.drawerlayout.widget.DrawerLayout>

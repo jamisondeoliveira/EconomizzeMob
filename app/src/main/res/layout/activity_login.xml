@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background="#0C214C">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/fundo_card_branco"
+            android:orientation="vertical"
+            android:padding="24dp">
+
+            <ImageView
+                android:layout_width="90dp"
+                android:layout_height="90dp"
+                android:layout_gravity="center"
+                android:src="@mipmap/ic_launcher"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="Economizze"
+                android:textSize="28sp"
+                android:textStyle="bold"
+                android:textColor="#0C214C"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="Faça seu login"
+                android:textColor="#6B7A99"
+                android:layout_marginBottom="20dp"/>
+
+            <EditText
+                android:id="@+id/inputEmailLogin"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:background="@drawable/fundo_input_claro"
+                android:hint="Email"
+                android:inputType="textEmailAddress"
+                android:padding="16dp"
+                android:textColor="#0C214C"
+                android:textColorHint="#8A94A6"/>
+
+            <EditText
+                android:id="@+id/inputSenhaLogin"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/fundo_input_claro"
+                android:hint="Senha"
+                android:inputType="textPassword"
+                android:padding="16dp"
+                android:textColor="#0C214C"
+                android:textColorHint="#8A94A6"
+                android:drawableEnd="@android:drawable/ic_menu_view"/>
+
+            <TextView
+                android:id="@+id/btnEsqueceuSenha"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:layout_marginTop="8dp"
+                android:text="Esqueceu a senha?"
+                android:textColor="#0C214C"
+                android:textSize="13sp"
+                android:textStyle="bold"/>
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnEntrar"
+                android:layout_width="match_parent"
+                android:layout_height="58dp"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/fundo_botao_azul"
+                android:text="Entrar"
+                android:textColor="#FFFFFF"
+                android:textAllCaps="false"
+                android:textSize="16sp"/>
+
+            <TextView
+                android:id="@+id/btnIrCadastro"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="16dp"
+                android:text="Não tem uma conta? Criar conta"
+                android:textColor="#6B7A99"/>
+
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#F2F4F7"
+    android:padding="16dp">
+
+    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:text="Histórico"
+        tools:ignore="HardcodedText"
+        android:textSize="24sp" android:textStyle="bold" android:textColor="#0C214C"/>
+
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="12dp">
+
+        <androidx.appcompat.widget.AppCompatButton android:id="@+id/btnFiltroTodos"
+            android:layout_width="0dp" android:layout_weight="1" android:layout_height="48dp"
+            android:text="Todos"
+            tools:ignore="HardcodedText"
+            android:background="@drawable/fundo_botao_azul" android:textColor="#FFF" android:textAllCaps="false"/>
+
+        <androidx.appcompat.widget.AppCompatButton android:id="@+id/btnFiltroEntradas"
+            android:layout_width="0dp" android:layout_weight="1" android:layout_height="48dp" android:layout_marginStart="8dp"
+            android:text="Entradas"
+            tools:ignore="HardcodedText"
+            android:background="@drawable/fundo_card_branco" android:textColor="#0C214C" android:textAllCaps="false"/>
+
+        <androidx.appcompat.widget.AppCompatButton android:id="@+id/btnFiltroSaidas"
+            android:layout_width="0dp" android:layout_weight="1" android:layout_height="48dp" android:layout_marginStart="8dp"
+            android:text="Saídas"
+            tools:ignore="HardcodedText"
+            android:background="@drawable/fundo_card_branco" android:textColor="#0C214C" android:textAllCaps="false"/>
+    </LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView android:id="@+id/recyclerHistorico" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_marginTop="12dp"/>
+
+</LinearLayout>

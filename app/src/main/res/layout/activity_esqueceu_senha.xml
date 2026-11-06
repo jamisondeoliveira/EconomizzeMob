@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background="#0C214C">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/fundo_card_branco"
+            android:orientation="vertical"
+            android:padding="24dp">
+
+            <ImageView
+                android:layout_width="90dp"
+                android:layout_height="90dp"
+                android:layout_gravity="center"
+                android:src="@mipmap/ic_launcher"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="Economizze"
+                android:textSize="28sp"
+                android:textStyle="bold"
+                android:textColor="#0C214C"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="Recuperar senha"
+                android:textColor="#6B7A99"
+                android:layout_marginBottom="8dp"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Digite seu e-mail e enviaremos um link para redefinir sua senha."
+                android:textColor="#6B7A99"
+                android:textSize="13sp"
+                android:gravity="center"
+                android:layout_marginBottom="20dp"/>
+
+            <EditText
+                android:id="@+id/inputEmailRecuperar"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:background="@drawable/fundo_input_claro"
+                android:hint="Email"
+                android:inputType="textEmailAddress"
+                android:padding="16dp"
+                android:textColor="#0C214C"
+                android:textColorHint="#8A94A6"/>
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnEnviarLink"
+                android:layout_width="match_parent"
+                android:layout_height="58dp"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/fundo_botao_azul"
+                android:text="Enviar link"
+                android:textColor="#FFFFFF"
+                android:textAllCaps="false"
+                android:textSize="16sp"/>
+
+            <TextView
+                android:id="@+id/btnVoltarLoginRecuperar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="16dp"
+                android:text="Voltar para o login"
+                android:textColor="#0C214C"
+                android:textStyle="bold"/>
+
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

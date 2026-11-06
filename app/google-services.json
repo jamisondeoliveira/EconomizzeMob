@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "916906114013",
+    "project_id": "economizze-14c68",
+    "storage_bucket": "economizze-14c68.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:916906114013:android:fd85dee4d021cdb02b1434",
+        "android_client_info": {
+          "package_name": "com.example.economizzemob"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD5ZBMygPuGi7_H3DFTvKwycTZxDn8p37s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

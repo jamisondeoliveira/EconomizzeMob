@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/fundo_card_branco"
+    android:padding="16dp"
+    android:layout_margin="8dp">
+
+    <TextView android:id="@+id/txtDescHistorico" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textStyle="bold" android:textColor="#0C214C" android:textSize="16sp" android:text="Mercado"/>
+    <TextView android:id="@+id/txtDataHistorico" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#737B8C" android:textSize="12sp" android:text="📅 03/11/2026"/>
+    <TextView android:id="@+id/txtValorHistorico" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textStyle="bold" android:textSize="18sp" android:layout_marginTop="4dp" android:text="- R$ 50,00"/>
+
+</LinearLayout>
